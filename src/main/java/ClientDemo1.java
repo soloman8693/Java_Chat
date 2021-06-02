@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.util.Date;
 
-public class ClientDemo {
+public class ClientDemo1 {
 
     public static void main(String[] args) {
 
@@ -37,7 +37,7 @@ public class ClientDemo {
             os.write("HELO! now is " + new Date());
             os.newLine(); // kết thúc dòng
             os.flush();  // đẩy dữ liệu đi.
-            os.write("I am Tom Cat");
+            os.write("I am HoalUU");
             os.newLine();
             os.flush();
             os.write("QUIT");
