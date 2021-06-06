@@ -1,11 +1,11 @@
 import java.io.*;
 import java.net.*;
 import java.util.Date;
+import java.util.Scanner;
 
 public class ClientDemo {
 
-    public static void main(String[] args) {
-
+    void execute() {
         // Địa chỉ máy chủ.
         final String serverHost = "localhost";
 
@@ -18,11 +18,14 @@ public class ClientDemo {
             // trên máy 'localhost' cổng 7777.
             socketOfClient = new Socket(serverHost, 7777);
 
-            // Tạo luồng đầu ra tại client (Gửi dữ liệu tới server)
-            os = new BufferedWriter(new OutputStreamWriter(socketOfClient.getOutputStream()));
+//            // Tạo luồng đầu ra tại client (Gửi dữ liệu tới server)
+//            os = new BufferedWriter(new OutputStreamWriter(socketOfClient.getOutputStream()));
+//
+//            // Luồng đầu vào tại Client (Nhận dữ liệu từ server).
+//            is = new BufferedReader(new InputStreamReader(socketOfClient.getInputStream()));
 
-            // Luồng đầu vào tại Client (Nhận dữ liệu từ server).
-            is = new BufferedReader(new InputStreamReader(socketOfClient.getInputStream()));
+            new ReadThread(socketOfClient, this).start();
+            new WriteThread(socketOfClient, this).start();
 
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + serverHost);
@@ -31,37 +34,55 @@ public class ClientDemo {
             System.err.println("Couldn't get I/O for the connection to " + serverHost);
             return;
         }
+    }
 
-        try {
-            // Ghi dữ liệu vào luồng đầu ra của Socket tại Client.
-            os.write("HELO! now is " + new Date());
-            os.newLine(); // kết thúc dòng
-            os.flush();  // đẩy dữ liệu đi.
-            os.write("I am Tom Cat");
-            os.newLine();
-            os.flush();
-            os.write("QUIT");
-            os.newLine();
-            os.flush();
+    public static void main(String[] args) {
 
-            // Đọc dữ liệu trả lời từ phía server
-            // Bằng cách đọc luồng đầu vào của Socket tại Client.
-            String responseLine;
-            while ((responseLine = is.readLine()) != null) {
-                System.out.println("Server: " + responseLine);
-                if (responseLine.indexOf("OK") != -1) {
-                    break;
-                }
-            }
-
-            os.close();
-            is.close();
-            socketOfClient.close();
-        } catch (UnknownHostException e) {
-            System.err.println("Trying to connect to unknown host: " + e);
-        } catch (IOException e) {
-            System.err.println("IOException:  " + e);
-        }
+        ClientDemo clientDemo = new ClientDemo();
+        clientDemo.execute();
+//
+//        try {
+//            // Ghi dữ liệu vào luồng đầu ra của Socket tại Client.
+////            os.write("HELO! now is " + new Date());
+////            os.newLine(); // kết thúc dòng
+////            os.flush();  // đẩy dữ liệu đi.
+////            os.write("I am HoalUU");
+////            os.newLine();
+////            os.flush();
+////            os.write("QUIT");
+////            os.newLine();
+////            os.flush();
+//            String mess;
+//            do {
+//                String line = is.readLine();
+//                System.out.println(line);
+//
+//                Scanner in = new Scanner(System.in);
+//                mess = in.nextLine();
+//                os.write(mess);
+//                os.newLine();
+//                os.flush();
+//
+//            } while (!mess.equalsIgnoreCase("bye"));
+//
+//            // Đọc dữ liệu trả lời từ phía server
+//            // Bằng cách đọc luồng đầu vào của Socket tại Client.
+//            String responseLine;
+//            while ((responseLine = is.readLine()) != null) {
+//                System.out.println("Server: " + responseLine);
+//                if (responseLine.indexOf("OK") != -1) {
+//                    break;
+//                }
+//            }
+//
+//            os.close();
+//            is.close();
+//            socketOfClient.close();
+//        } catch (UnknownHostException e) {
+//            System.err.println("Trying to connect to unknown host: " + e);
+//        } catch (IOException e) {
+//            System.err.println("IOException:  " + e);
+//        }
     }
 
 }

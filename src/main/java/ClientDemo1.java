@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.Date;
+import java.util.Scanner;
 
 public class ClientDemo1 {
 
@@ -34,15 +35,26 @@ public class ClientDemo1 {
 
         try {
             // Ghi dữ liệu vào luồng đầu ra của Socket tại Client.
-            os.write("HELO! now is " + new Date());
-            os.newLine(); // kết thúc dòng
-            os.flush();  // đẩy dữ liệu đi.
-            os.write("I am HoalUU");
-            os.newLine();
-            os.flush();
-            os.write("QUIT");
-            os.newLine();
-            os.flush();
+//            os.write("HELO! now is " + new Date());
+//            os.newLine(); // kết thúc dòng
+//            os.flush();  // đẩy dữ liệu đi.
+//            os.write("I am HoalUU");
+//            os.newLine();
+//            os.flush();
+//            os.write("QUIT");
+//            os.newLine();
+//            os.flush();
+            String mess;
+            do {
+                Scanner in = new Scanner(System.in);
+                mess = in.nextLine();
+                os.write(mess);
+                os.newLine();
+                os.flush();
+
+                String line = is.readLine();
+                System.out.println(line);
+            } while (!mess.equalsIgnoreCase("bye"));
 
             // Đọc dữ liệu trả lời từ phía server
             // Bằng cách đọc luồng đầu vào của Socket tại Client.

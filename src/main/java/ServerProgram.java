@@ -1,15 +1,15 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ServerProgram {
 
-    public static void main(String args[]) throws IOException {
+    private Set<ServiceThread> newConntect = new HashSet<>();
 
+
+    void execute() throws IOException {
         ServerSocket listener = null;
 
         System.out.println("Server is waiting to accept user...");
@@ -34,12 +34,26 @@ public class ServerProgram {
                 // Đồng thời nhận được một đối tượng Socket tại server.
 
                 Socket socketOfServer = listener.accept();
-                new ServiceThread(socketOfServer, clientNumber++).start();
+                ServiceThread serviceThread= new ServiceThread(socketOfServer, clientNumber++, this);
+                newConntect.add(serviceThread);
+                serviceThread.start();
             }
         } finally {
             listener.close();
         }
+    }
 
+    public static void main(String args[]) throws IOException {
+        ServerProgram serverProgram = new ServerProgram();
+        serverProgram.execute();
+    }
+
+    void broadcast(String message, ServiceThread excludeUser) throws IOException {
+        for (ServiceThread aUser : newConntect) {
+            if (aUser != excludeUser) {
+                aUser.sendMess(message);
+            }
+        }
     }
 
     private static void log(String message) {
@@ -50,10 +64,13 @@ public class ServerProgram {
 
         private int clientNumber;
         private Socket socketOfServer;
+        BufferedWriter os;
+        ServerProgram server;
 
-        public ServiceThread(Socket socketOfServer, int clientNumber) {
+        public ServiceThread(Socket socketOfServer, int clientNumber, ServerProgram server) {
             this.clientNumber = clientNumber;
             this.socketOfServer = socketOfServer;
+            this.server = server;
 
             // Log
             log("New connection with client# " + this.clientNumber + " at " + socketOfServer);
@@ -64,29 +81,30 @@ public class ServerProgram {
 
             try {
 
-
                 // Mở luồng vào ra trên Socket tại Server.
                 BufferedReader is = new BufferedReader(new InputStreamReader(socketOfServer.getInputStream()));
-                BufferedWriter os = new BufferedWriter(new OutputStreamWriter(socketOfServer.getOutputStream()));
+                os = new BufferedWriter(new OutputStreamWriter(socketOfServer.getOutputStream()));
 
                 while (true) {
                     // Đọc dữ liệu tới server (Do client gửi tới).
                     String line = is.readLine();
-
+                    System.out.println(line);
                     // Ghi vào luồng đầu ra của Socket tại Server.
                     // (Nghĩa là gửi tới Client).
-                    os.write(">> " + line);
-                    // Kết thúc dòng
-                    os.newLine();
-                    // Đẩy dữ liệu đi
-                    os.flush();
+//                    os.write(">> " + line);
+//                    // Kết thúc dòng
+//                    os.newLine();
+//                    // Đẩy dữ liệu đi
+//                    os.flush();
+
+                    server.broadcast(line,this);
 
                     // Nếu người dùng gửi tới QUIT (Muốn kết thúc trò chuyện).
 //                    if (line.equals("QUIT")) {
 //                        os.write(">> OK");
 //                        os.newLine();
 //                        os.flush();
-//                        //break;
+//                        break;
 //                    }
                 }
 
@@ -94,6 +112,14 @@ public class ServerProgram {
                 System.out.println(e);
                 e.printStackTrace();
             }
+        }
+
+        void sendMess(String mess) throws IOException {
+            os.write(">> " + mess);
+            // Kết thúc dòng
+            os.newLine();
+            // Đẩy dữ liệu đi
+            os.flush();
         }
     }
 }
